@@ -47,6 +47,8 @@ def test_archives_include_installable_code_without_caches(tmp_path):
             assert f"{prefix}/__init__.py" in names
             assert f"{prefix}/exceptions.py" in names
             assert f"{prefix}/translations/en.json" in names
+            assert f"{prefix}/brand/icon.png" in names
+            assert f"{prefix}/brand/icon@2x.png" in names
             assert json.loads(archive.read(f"{prefix}/manifest.json")) == manifest
             assert not any("__pycache__" in name or name.endswith((".pyc", ".pyo")) for name in names)
     with ZipFile(complete_zip) as archive:

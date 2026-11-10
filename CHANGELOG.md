@@ -5,6 +5,11 @@
 Requires Home Assistant 2026.11.0 or newer. Tested against Core 2026.11.1 on
 Python 3.14.10.
 
+- Add a single release command with local hassfest, version/tag checks and an
+  exact-commit GitHub validation gate before pushing a release tag.
+- Correct translation schemas and declare config-entry-only setup. Remove invalid
+  optional heater state-icon mappings while retaining existing mode values.
+
 - Prepare distribution through the built-in Home Assistant Marketplace, with
   current repository metadata, Climate categorization, and installation docs.
 - Keep the existing integration domain, devices, and entity IDs for in-place

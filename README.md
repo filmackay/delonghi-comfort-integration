@@ -260,29 +260,71 @@ HACS repository action (also used by the Marketplace).
 
 #### Release workflow
 
-A `v*` tag runs the tests and builds two archives: `delonghi_comfort.zip` for
-manual installation and a complete package with documentation. The tag must
-match the version committed in `manifest.json`; the workflow never rewrites it.
-The Marketplace installs the integration directly from the release's source tree.
-
-Build and inspect the packages locally before publishing:
+Use one command to run the local release checks before pushing:
 
 ```bash
-uv run python scripts/build_release.py --tag v1.1.0
+uv run scripts/release.py
 ```
 
-Publishing a matching Git tag triggers the GitHub release workflow. Manual
-workflow dispatch can republish an existing matching tag.
+This checks version consistency in `manifest.json`, `pyproject.toml`, `uv.lock`
+and the latest `CHANGELOG.md` heading, synchronizes the locked environment, checks
+dependencies and types, runs tests and syntax checks, runs the official hassfest
+Docker image, and builds the archives. Docker Desktop must be running. It can
+validate uncommitted work and **never creates or pushes a tag without `--version`**.
+The Marketplace metadata and packaging tests run locally; GitHub's repository
+validation also runs in CI.
+
+To publish a version (using `1.1.0` as an example):
+
+1. Update the manifest and project versions and changelog, then run `uv lock`.
+2. Commit the changes on `main` and push them to your fork with `git push origin main`.
+3. Run:
+
+   ```bash
+   uv run scripts/release.py --version 1.1.0
+   ```
+
+Release mode requires Git, Docker, uv and the GitHub CLI (`gh`, authenticated with
+`gh auth login`). It refuses a dirty tree, a branch other than `main`, the wrong
+`origin` push URL, a commit that differs from GitHub's `main`, mismatched version
+files, or a version already used by a local/remote tag or GitHub release. Versions
+must be `X.Y.Z` or `vX.Y.Z`; prerelease versions are not supported by this stable
+release workflow.
+
+Release mode also checks the GitHub repository description, enabled Issues,
+topics and archived status before running tests. The local brand icon is checked
+in both modes. These are Marketplace requirements, including for this fork.
+
+After all local checks pass, it requires a successful **Validate** workflow for
+that exact commit, including Marketplace repository validation. It waits for an
+existing run, or dispatches Validate if no run exists. Enable Actions in your fork
+if prompted. A failed CI run stops the command. It rechecks the Git state and
+version availability, then creates an annotated tag for the validated commit and
+pushes **only that tag**, without force. It does not commit or push branch changes.
+
+The tag push triggers **Release**, which validates again and publishes a public
+GitHub release marked Latest, with both ZIP archives attached. Watch its progress
+in the repository's Actions tab. A successful tag push does not itself mean the
+GitHub release has finished publishing.
+
+If a tag push fails or its result cannot be confirmed, the helper retains the
+local tag and reports the uncertainty. Inspect GitHub before retrying; existing
+tags and releases are never automatically deleted or overwritten. For an existing
+tag, **Actions → Release → Run workflow** can retry publication of that commit.
+
+`scripts/build_release.py` remains the internal packaging helper used by CI and
+this command. It creates ignored archives in `dist/`; running it directly never
+publishes anything. There is no need to upload those local files manually.
+
+Marketplace installs from the release's source tree, rather than these ZIP
+assets. Before the repository has releases, it tracks the default branch's latest
+commit, so pushing to `main` can offer updates even without a release. Once
+releases exist, the latest release is the normal update target; installations
+explicitly tracking a branch continue to follow that branch.
 
 ## 📄 License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
-
-### License Attribution
-
-This project incorporates code from the following Apache 2.0 licensed projects:
-- **[rtfpessoa/delonghi-comfort-client](https://github.com/rtfpessoa/delonghi-comfort-client)** - Licensed under Apache 2.0
-- **[duckwc/ECAMpy](https://github.com/duckwc/ECAMpy)** - Authentication and token conversion code
 
 All modifications and additions to the original code are also licensed under Apache 2.0. See the NOTICE file for detailed attribution information.
 
@@ -290,7 +332,7 @@ All modifications and additions to the original code are also licensed under Apa
 
 - **[rtfpessoa](https://github.com/rtfpessoa)** for the original [delonghi-comfort-client](https://github.com/rtfpessoa/delonghi-comfort-client)
 - **[duckwc](https://github.com/duckwc)** for the authentication code from [ECAMpy](https://github.com/duckwc/ECAMpy)
-- The Home Assistant community for guidance and best practices
+- **[philm5](https://github.com/philm5)** for everything else from [delonghi-comfort-integration](https://github.com/philm5/delonghi-comfort-integration)
 
 ## 📞 Support
 

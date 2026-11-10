@@ -2,6 +2,14 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "Release: validate locally",
+      "type": "process",
+      "command": "uv",
+      "args": ["run", "scripts/release.py"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
       "label": "Python: type check project",
       "type": "process",
       "command": "uv",

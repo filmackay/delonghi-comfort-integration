@@ -1,4 +1,4 @@
-"""Build installable release archives without changing the versioned source."""
+"""Build local ZIP archives only; do not create Git tags or publish releases."""
 
 import argparse
 import json
@@ -49,8 +49,9 @@ def build_release(output_dir: Path, tag: str | None = None) -> tuple[Path, Path]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--tag", help="Require this tag to match manifest.json")
+    parser.add_argument("--tag", help="Validate this version against manifest.json; does not create a Git tag")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "dist")
     args = parser.parse_args()
     for artifact in build_release(args.output_dir, args.tag):
         print(artifact)
+    print("Built local archives only. Use 'uv run scripts/release.py --version X.Y.Z' to validate and publish.")
